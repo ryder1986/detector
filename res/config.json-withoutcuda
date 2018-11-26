@@ -1,0 +1,22 @@
+{
+    "DeviceConfig":{
+        "DeviceName":"test pvd",
+        "CameraData":
+            [
+            {
+                "DetectRegion":
+                    [
+                    {
+                        "ExpectedAreaVers":[{"x":119,"y":332},{"x":324,"y":312},{"x":628,"y":462},{"x":225,"y":474}],
+                        "ProcessorData":{"Horizon":true,"Vertical":true,"Radii":10},
+                        "SelectedProcessor":"Dummy",
+                        "Comment":"C4/Dummy"
+                    }
+                ],
+                "Url1":"rtsp://192.1623238.1.211:8554/live/test1",
+                "Url":"rtsp://192.168.1.95:554/av0_1"
+            }
+        ]
+
+    }
+}
