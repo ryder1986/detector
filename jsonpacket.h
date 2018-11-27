@@ -54,6 +54,11 @@ public:
         val=pkt.value();
         str_data=pkt.str();
     }
+//    void operator =(JsonPacket &pkt)
+//    {
+//        val=pkt.value();
+//        str_data=pkt.str();
+//    }
 
     void operator =(vector<JsonPacket> ar)
     {
