@@ -152,6 +152,7 @@ public:
     }
     ~Camera_Manager()
     {
+        prt(info,"destr");
         delete p_src;
     }
     Camera_Manager(Camera_Manager&&r)
@@ -160,8 +161,10 @@ public:
         p_src=r.p_src;
         r.p_src=nullptr;
     }
-    Camera_Manager(Camera_Manager&)
+ //  Camera_Manager(Camera_Manager&&r)=default;
+    Camera_Manager(const Camera_Manager&m)
     {
+        p_src=m.p_src;
         prt(info,"start camera copy");
     }
 private:
@@ -182,7 +185,9 @@ public:
         VdData(pkt)
     {
         for(CameraData_Pri &cam_config:pkt.CameraData){
-            cameras.push_back(Camera_Manager(cam_config));
+           Camera_Manager m(cam_config);
+           Camera_Manager &mm=m;
+           cameras.push_back(mm);
         }
     }
 private:
