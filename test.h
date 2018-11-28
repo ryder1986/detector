@@ -3,13 +3,14 @@
 #include "tool.h"
 #include "jsonpacket.h"
 #include "configmanager.h"
-
-class Point_Pri:public JsonData
+#define LABEL_PROCESSOR_DUMMY "Dummy"
+#define LABEL_PROCESSOR_MVD "Mvd"
+class Point_Pri:public JsonObject
 {
 public:
     int x;
     int y;
-    Point_Pri(JsonPacket pkt):JsonData(pkt)
+    Point_Pri(JsonPacket pkt):JsonObject(pkt)
     {
         decode();
     }
@@ -32,19 +33,50 @@ public:
         ENCODE_INT_MEM(y);
     }
 };
-class DummyProcessor_Output:public JsonData{
+class Vers:public JsonObject{
+public:
+    vector <Point_Pri>ExpectedAreaVers;
+    Vers(JsonPacket pkt):JsonObject(pkt)
+    {
+        decode();
+    }
+    Vers(vector <Point_Pri> vs)
+    {
+        ExpectedAreaVers.assign(vs.begin(),vs.end());
+        encode();
+    }
+    void decode()
+    {
+        try{
+            DECODE_JSONDATA_ARRAY_MEM(ExpectedAreaVers);
+        }catch(exception e){
+            PRT_DECODE_EXCEPTION
+        }
+    }
+    void encode()
+    {
+        try{
+            ENCODE_JSONDATA_ARRAY_MEM(ExpectedAreaVers);
+        }catch(exception e){
+            PRT_DECODE_EXCEPTION
+        }
+
+    }
+};
+
+class DummyProcessor_Output:public JsonObject{
 
 public:
-    vector<VdPoint> Points;
+    vector<Point_Pri> Points;
     int Radii;
     DummyProcessor_Output()
     {
     }
-    DummyProcessor_Output(JsonPacket str):JsonData(str)
+    DummyProcessor_Output(JsonPacket str):JsonObject(str)
     {
         decode();
     }
-    DummyProcessor_Output(vector<VdPoint> o,int r):Radii(r)
+    DummyProcessor_Output(vector<Point_Pri> o,int r):Radii(r)
     {
         Points.assign(o.begin(),o.end());
         encode();
@@ -72,13 +104,15 @@ public:
               A draw_line,
               B draw_circle,C draw_text)
     {
-        for(VdPoint p:Points){
-            draw_circle(VdPoint(p.x+offx,p.y+offy),Radii,PaintableData::Colour::Red,2);
-        }
+        //        for(Point_Pri p:Points){
+        //            draw_circle(Point_Pri(p.x+offx,p.y+offy),Radii,PaintableData::Colour::Red,2);
+        //        }
     }
 
 };
-class DummyProcessor_Pri:public JsonData,public PaintableData{
+class DummyProcessor_Pri:public JsonObject
+        //,public PaintableData
+{
 
 public:
     bool Horizon;
@@ -88,7 +122,7 @@ public:
     {
         encode();
     }
-    DummyProcessor_Pri(JsonPacket pkt):JsonData(pkt)
+    DummyProcessor_Pri(JsonPacket pkt):JsonObject(pkt)
     {
         decode();
     }
@@ -123,12 +157,12 @@ public:
     }
 };
 
-class DetectRegion_Pri:public JsonData{
+class DetectRegion_Pri:public JsonObject{
 public:
     vector<Point_Pri> ExpectedAreaVers;
     JsonPacket ProcessorData;
     string SelectedProcessor;
-    DetectRegion_Pri(JsonPacket pkt):JsonData(pkt)
+    DetectRegion_Pri(JsonPacket pkt):JsonObject(pkt)
     {
         decode();
     }
@@ -145,14 +179,79 @@ public:
         ENCODE_STRING_MEM(SelectedProcessor);
         DECODE_PKT_MEM(ProcessorData);
     }
+public:
+    void change_rect(const vector<Point_Pri> &vers)
+    {
+
+    }
 };
-class CameraData_Pri:public JsonData{
+class DetectRegion_Output:public JsonObject
+{
+public:
+    VdRect DetectionRect;
+    JsonPacket Result;
+    DetectRegion_Output(JsonPacket pkt):JsonObject(pkt)
+    {
+        decode();
+    }
+
+    DetectRegion_Output(JsonPacket rst ,VdRect rct)
+    {
+        DetectionRect=rct;
+        Result=rst;
+        encode();
+    }
+
+    void decode()
+    {
+        try{
+            DECODE_PKT_MEM(DetectionRect);
+            DECODE_PKT_MEM(Result);
+        }catch(exception e){
+            PRT_DECODE_EXCEPTION
+        }
+    }
+
+    void encode()
+    {
+        try{
+            ENCODE_JSONDATA_MEM(DetectionRect);
+            ENCODE_PKT_MEM(Result);
+        }catch(exception e){
+            PRT_DECODE_EXCEPTION
+        }
+    }
+    template <typename A,typename B,typename C>
+    void draw(
+            A draw_line,
+            B draw_circle,C draw_text,DetectRegion_Pri input_data)
+    {
+        if(input_data.SelectedProcessor== LABEL_PROCESSOR_DUMMY)
+        {
+            DummyProcessor_Output data=Result;
+            data.draw(DetectionRect.x,DetectionRect.y, draw_line,
+                      draw_circle, draw_text);
+        }
+#if 0
+        if(input_data.SelectedProcessor== LABEL_PROCESSOR_MVD)
+        {
+            MvdProcessorOutputData data=Result;
+            MvdProcessorInputData i_data(input_data.ProcessorData);
+            data.draw(i_data,DetectionRect.x,DetectionRect.y, draw_line,
+                      draw_circle, draw_text);
+        }
+#endif
+
+    }
+
+};
+class CameraData_Pri:public JsonObject{
 
 public:
     CameraData_Pri()
     {
     }
-    CameraData_Pri(JsonPacket pkt):JsonData(pkt)
+    CameraData_Pri(JsonPacket pkt):JsonObject(pkt)
     {
         decode();
     }
@@ -169,16 +268,18 @@ private:
         DECODE_STRING_MEM(Url);
     }
 public:
+
+public:
     vector<DetectRegion_Pri> DetectRegion;
     string Url;
 };
-class CameraManagerData_Pri:public JsonData{
+class CameraManagerData_Pri:public JsonObject{
 
 public:
     CameraManagerData_Pri()
     {
     }
-    CameraManagerData_Pri(JsonPacket pkt):JsonData(pkt)
+    CameraManagerData_Pri(JsonPacket pkt):JsonObject(pkt)
     {
         decode();
     }
@@ -196,13 +297,13 @@ public:
     vector<CameraData_Pri> CameraData;
 
 };
-class DeviceConfig_Pri:public JsonData
+class DeviceConfig_Pri:public JsonObject
 {
 public:
     DeviceConfig_Pri()
     {
     }
-    DeviceConfig_Pri(JsonPacket pkt):JsonData(pkt)
+    DeviceConfig_Pri(JsonPacket pkt):JsonObject(pkt)
     {
         decode();
     }
@@ -284,11 +385,183 @@ public:
     {
 
     }
+    DetectRegion_Output work(Mat frame)
+    {
+        lock.lock();
+        JsonPacket rst_r;
+        valid_rect(detect_rect,frame.cols,frame.rows);
+        if(detect_rect.width%2)detect_rect.width--;
+        if(detect_rect.height%2)detect_rect.height--;
+        Mat tmp=frame(detect_rect);
+        if(p &&detect_rect.x>=0&&detect_rect.x<10000
+                &&detect_rect.y>=0&&detect_rect.y<10000
+                &&detect_rect.width>0&&detect_rect.width<10000
+                &&detect_rect.height>0&&detect_rect.height<10000
+                &&frame.cols>0&&frame.rows>0
+                ){
+            p->process(tmp,rst_r);
 
+        }else{
+            prt(info,"err arg");
+        }
+        //  p->process(frame,rst_r);
+        VdRect r(detect_rect.x,detect_rect.y,detect_rect.width,detect_rect.height);
+        JsonPacket dct_rct=r.data();
+        DetectRegion_Output rst(rst_r,dct_rct);
+        lock.unlock();
+        return rst;
+    }
+
+
+    void modify(RequestPkt pkt)
+    {
+        prt(info,"request %d",pkt.Operation);
+        lock.lock();
+        int op=pkt.Operation;
+        switch(op){
+        case OP::CHANGE_RECT:
+        {
+            change_rect(Vers(pkt.Argument).ExpectedAreaVers);
+            //            AreaVersJsonDataRequest vs(pkt.Argument);
+            //            detect_rect=reshape_2_rect(vs.ExpectedAreaVers);
+            //            private_data.set_points(vs.ExpectedAreaVers);
+            break;
+        }
+        case OP::CHANGE_PROCESSOR:
+        {
+            //            if(p){
+            //                delete p;
+            //                p=NULL;
+            //            }
+            //            ProcessorDataJsonDataRequest sp(pkt.Argument);
+            //            string pro=sp.SelectedProcessor;
+            //            if(pro==LABEL_PROCESSOR_DUMMY){
+            //                p=new DummyProcessor(sp.ProcessorData);
+            //                private_data.set_processor(pro,sp.ProcessorData);
+            //            }
+            //            if(pro==LABEL_PROCESSOR_MVD)
+            //            {
+            //                p=new MvdProcessor(sp.ProcessorData);
+            //                private_data.set_processor(pro,sp.ProcessorData);
+            //            }
+
+            break;
+        }
+        case OP::MODIFY_PROCESSOR:
+        {
+            //            p-> modify_processor(pkt.Argument);
+            //            private_data.set_processor_data(pkt.Argument);//TODO:fetch data from processor
+            break;
+        }
+
+defalut:break;
+        }
+        lock.unlock();
+    }
+
+    void change_rect(vector<Point_Pri> points)
+    {
+        detect_rect=reshape_2_rect(points);
+        private_data.change_rect(points);
+    }
+
+    static void valid_rect(Rect &area,int max_w,int max_h)
+    {
+        if((area.x+area.width)>max_w)
+            area.width=max_w-area.x;
+        if((area.y+area.height)>max_h)
+            area.height=max_h-area.y;
+    }
+    static Rect reshape_2_rect(vector <Point_Pri> area)
+    {
+        int x_min=10000;
+        int y_min=10000;
+        int x_max=0;
+        int y_max=0;
+        for(Point_Pri pkt: area) {
+            int x=pkt.x;
+            int y=pkt.y;
+            if(x<x_min)
+                x_min=x;
+            if(x>x_max)
+                x_max=x;
+            if(y<y_min)
+                y_min=y;
+            if(y>y_max)
+                y_max=y;
+        }
+        x_min=x_min>0?x_min:0;
+        y_min=y_min>0?y_min:0;
+        x_max=x_max>0?x_max:0;
+        y_max=y_max>0?y_max:0;
+        return Rect(x_min,y_min,x_max-x_min,y_max-y_min);
+    }
 private:
-
+    Rect detect_rect;
+    mutex lock;
+    VideoProcessor *p;
 
 };
+class Camera_Output:public JsonObject{
+public:
+    vector<DetectRegion_Output> DetectionResult;
+    int Timestamp;
+    Camera_Output(JsonPacket pkt):JsonObject(pkt)
+    {
+        decode();
+    }
+    Camera_Output()
+    {
+    }
+    Camera_Output(vector <DetectRegion_Output> regions,int ts):DetectionResult(regions),Timestamp(ts)
+    {
+        encode();
+    }
+    void decode()
+    {
+        try{
+            DECODE_INT_MEM(Timestamp);
+            DECODE_JSONDATA_ARRAY_MEM(DetectionResult);
+        }catch(exception e){
+            PRT_DECODE_EXCEPTION
+        }
+    }
+    void encode()
+    {
+        try{
+            ENCODE_INT_MEM(Timestamp);
+            ENCODE_JSONDATA_ARRAY_MEM(DetectionResult);
+        }
+        catch(exception e){
+            PRT_DECODE_EXCEPTION
+        }
+    }
+#if 0
+    template <typename A,typename B,typename C>
+    void draw(CameraInputData data,
+              A draw_line,
+              B draw_circle,C draw_text)
+    {
+        int sz=DetectionResult.size();
+        for(int i=0;i<sz;i++){
+            DetectRegionOutputData &dt= DetectionResult[i];
+            if(i>=data.DetectRegion.size()){
+                prt(info,"region %d outof range ",i);
+                continue;
+            }
+            dt.draw(draw_line,draw_circle,draw_text,data.DetectRegion[i]);
+            draw_text(data.Url,VdPoint(200,200),100,PaintableData::Blue,30);
+#if 0
+            char buf[20];
+            sprintf(buf,"data  ts:%d",Timestamp);
+            string str(buf);
+            draw_text(str,VdPoint(200,300),100,PaintableData::Blue,30);
+#endif
+        }
+    }
+#endif
+};
+
 class Camera_Manager:public VdData<CameraData_Pri>
 {
 public:
@@ -300,6 +573,7 @@ public:
     {
         prt(info,"start camera %s",pkt.Url.data());
         p_src=new VideoSource(pkt.Url);
+        //  private_data.set_points(vs.ExpectedAreaVers);
     }
     ~Camera_Manager()
     {
@@ -310,15 +584,69 @@ public:
         p_src=r.p_src;
         r.p_src=nullptr;
     }
- //  Camera_Manager(Camera_Manager&&r)=default;
+    //  Camera_Manager(Camera_Manager&&r)=default;
     Camera_Manager(const Camera_Manager&m)
     {
         p_src=m.p_src;
+    }
+
+    void run_process()
+    {
+        Mat frame;
+        int ts;
+        while(!quit){
+            this_thread::sleep_for(chrono::milliseconds(10));
+            if(p_src->get_frame(frame,ts)){
+                //            imshow("window",frame);
+                //            waitKey(0);
+                frame_rate++;
+#if 0
+                for(DetectRegion *r:drs){
+                    JsonPacket ret=r->work(frame);
+                    callback_result(this,ret.str());
+                }
+#endif
+                lock.lock();
+                vector<DetectRegion_Output>pkts;
+
+
+                for(Region_Manager *r:drs){
+                    // prt(info,"region siz %d,now (%d) ",drs.size(),++tmp);
+
+                    // imwrite("test1.png",frame);
+                    DetectRegion_Output ret=r->work(frame);
+                    pkts.push_back(ret);
+                }
+
+
+                //                CameraOutputData cod(pkts,ts);
+                //                timestamp=ts;
+                //                //screenshot=frame;
+
+                //                frame.copyTo(screenshot);
+
+
+
+                //                callback_result(this,cod);
+
+
+
+                lock.unlock();
+
+            }
+
+        }
+
     }
 private:
 
 private:
     VideoSource *p_src;
+    thread *work_trd;
+    int frame_rate;
+    mutex lock;
+    vector<Region_Manager*> drs;
+    bool quit;
 
 };
 
@@ -332,7 +660,7 @@ public:
         VdData(pkt)
     {
         for(CameraData_Pri &cam_config:pkt.CameraData){
-           cameras.push_back(Camera_Manager(cam_config));
+            cameras.push_back(Camera_Manager(cam_config));
         }
     }
 private:
@@ -364,11 +692,9 @@ public:
     Test(string str)
     {
         ConfigManager config;
-        //prt(info,"%s",config.get_config().str().data());
         DeviceConfig_Pri dev_cfg(config.get_config());
         DeviceConfig_Manager mgr(dev_cfg);
         PAUSE_HERE_FOREVER
-        // prt(info,"%s",dev_cfg.data().str().data());
     }
 };
 
