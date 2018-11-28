@@ -8,7 +8,7 @@ VideoSource::VideoSource(string path):watch_dog(bind(&VideoSource::check_point,t
     only_key_frame=false;
     try_times=0;
     url=path;
-    watch_dog.start(1000);
+    watch_dog.start(10000);
     queue_length=3;
 #if 0
     vcap.open(path);

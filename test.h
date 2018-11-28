@@ -297,13 +297,13 @@ public:
     vector<CameraData_Pri> CameraData;
 
 };
-class DeviceConfig_Pri:public JsonObject
+class Device_Pri:public JsonObject
 {
 public:
-    DeviceConfig_Pri()
+    Device_Pri()
     {
     }
-    DeviceConfig_Pri(JsonPacket pkt):JsonObject(pkt)
+    Device_Pri(JsonPacket pkt):JsonObject(pkt)
     {
         decode();
     }
@@ -569,20 +569,48 @@ public:
     {
     }
     Camera_Manager(CameraData_Pri pkt):
-        VdData(pkt)
+        VdData(pkt),frame_rate(0),quit(false)
     {
+
         prt(info,"start camera %s",pkt.Url.data());
         p_src=new VideoSource(pkt.Url);
+        start();
         //  private_data.set_points(vs.ExpectedAreaVers);
     }
     ~Camera_Manager()
     {
-        delete p_src;
+        quit=true;
+
+        lock.lock();
+        if(p_src){
+            delete p_src;
+        }
+        if(work_trd){
+            stop();
+            prt(info,"quit");
+            delete work_trd;
+        }
+        lock.unlock();
     }
     Camera_Manager(Camera_Manager&&r)
     {
+        lock.lock();
         p_src=r.p_src;
         r.p_src=nullptr;
+
+        work_trd=r.work_trd;
+        r.work_trd=nullptr;
+
+        frame_rate=r.frame_rate;
+        //     lock=r.lock;
+        vector<Region_Manager*> drs;
+        for(Region_Manager *rm:r.drs){
+            drs.push_back(rm);
+            rm=nullptr;
+        }
+        quit=r.quit;
+        lock.unlock();
+        prt(info,"copy done");
     }
     //  Camera_Manager(Camera_Manager&&r)=default;
     Camera_Manager(const Camera_Manager&m)
@@ -590,35 +618,34 @@ public:
         p_src=m.p_src;
     }
 
+    void start()
+    {
+        work_trd=new thread(bind(&Camera_Manager::run_process,this));
+    }
+
+    void stop()
+    {
+        work_trd->join();
+    }
     void run_process()
     {
         Mat frame;
         int ts;
         while(!quit){
             this_thread::sleep_for(chrono::milliseconds(10));
+            lock.lock();
             if(p_src->get_frame(frame,ts)){
-                //            imshow("window",frame);
-                //            waitKey(0);
+                // imshow("window",frame);
+                // waitKey(0);
                 frame_rate++;
-#if 0
-                for(DetectRegion *r:drs){
-                    JsonPacket ret=r->work(frame);
-                    callback_result(this,ret.str());
-                }
-#endif
-                lock.lock();
+
                 vector<DetectRegion_Output>pkts;
 
 
                 for(Region_Manager *r:drs){
-                    // prt(info,"region siz %d,now (%d) ",drs.size(),++tmp);
-
-                    // imwrite("test1.png",frame);
                     DetectRegion_Output ret=r->work(frame);
                     pkts.push_back(ret);
                 }
-
-
                 //                CameraOutputData cod(pkts,ts);
                 //                timestamp=ts;
                 //                //screenshot=frame;
@@ -629,14 +656,9 @@ public:
 
                 //                callback_result(this,cod);
 
-
-
-                lock.unlock();
-
             }
-
+            lock.unlock();
         }
-
     }
 private:
 
@@ -659,24 +681,26 @@ public:
     Cameras_Manager(CameraManagerData_Pri pkt):
         VdData(pkt)
     {
+        //prt(info,"Cameras_Manager start");
+
         for(CameraData_Pri &cam_config:pkt.CameraData){
             cameras.push_back(Camera_Manager(cam_config));
         }
+        //prt(info,"Cameras_Manager end");
     }
 private:
 
 private:
     vector <Camera_Manager> cameras;
-
 };
 
-class DeviceConfig_Manager:public VdData<DeviceConfig_Pri>
+class Device_Manager:public VdData<Device_Pri>
 {
 public:
-    DeviceConfig_Manager()
+    Device_Manager()
     {
     }
-    DeviceConfig_Manager(DeviceConfig_Pri pkt):
+    Device_Manager(Device_Pri pkt):
         VdData(pkt),m_cameras(private_data.DeviceConfig)
     {
 
@@ -691,9 +715,13 @@ public:
     Test();
     Test(string str)
     {
-        ConfigManager config;
-        DeviceConfig_Pri dev_cfg(config.get_config());
-        DeviceConfig_Manager mgr(dev_cfg);
+        try{
+            ConfigManager config;
+            Device_Pri dev_cfg(config.get_config());
+            Device_Manager mgr(dev_cfg);
+        }catch(exception e){
+            prt(info,"exception");
+        }
         PAUSE_HERE_FOREVER
     }
 };
