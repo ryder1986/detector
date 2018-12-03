@@ -47,19 +47,15 @@ public:
     }
     void decode()
     {
-        try{
-            DECODE_JSONDATA_ARRAY_MEM(ExpectedAreaVers);
-        }catch(exception e){
-            PRT_DECODE_EXCEPTION
-        }
+
+        DECODE_JSONDATA_ARRAY_MEM(ExpectedAreaVers);
+
     }
     void encode()
     {
-        try{
-            ENCODE_JSONDATA_ARRAY_MEM(ExpectedAreaVers);
-        }catch(exception e){
-            PRT_DECODE_EXCEPTION
-        }
+
+        ENCODE_JSONDATA_ARRAY_MEM(ExpectedAreaVers);
+
 
     }
 };
@@ -83,21 +79,17 @@ public:
     }
     void decode()
     {
-        try{
-            DECODE_JSONDATA_ARRAY_MEM(Points);
-            DECODE_INT_MEM(Radii);
-        }catch(exception e){
-            PRT_DECODE_EXCEPTION
-        }
+
+        DECODE_JSONDATA_ARRAY_MEM(Points);
+        DECODE_INT_MEM(Radii);
+
     }
     void encode()
     {
-        try{
-            ENCODE_JSONDATA_ARRAY_MEM(Points);
-            ENCODE_INT_MEM(Radii);
-        }catch(exception e){
-            PRT_ENCODE_EXCEPTION
-        }
+
+        ENCODE_JSONDATA_ARRAY_MEM(Points);
+        ENCODE_INT_MEM(Radii);
+
     }
     template <typename A,typename B,typename C>
     void draw(int offx,int offy,
@@ -132,23 +124,19 @@ public:
     }
     void decode()
     {
-        try{
-            DECODE_BOOL_MEM(Horizon);
-            DECODE_BOOL_MEM(Vertical);
-            DECODE_INT_MEM(Radii);
-        }catch(exception e){
-            PRT_DECODE_EXCEPTION
-        }
+
+        DECODE_BOOL_MEM(Horizon);
+        DECODE_BOOL_MEM(Vertical);
+        DECODE_INT_MEM(Radii);
+
     }
     void encode()
     {
-        try{
-            ENCODE_BOOL_MEM(Horizon);
-            ENCODE_BOOL_MEM(Vertical);
-            ENCODE_INT_MEM(Radii);
-        }catch(exception e){
-            PRT_DECODE_EXCEPTION
-        }
+
+        ENCODE_BOOL_MEM(Horizon);
+        ENCODE_BOOL_MEM(Vertical);
+        ENCODE_INT_MEM(Radii);
+
     }
     static DummyProcessor_Pri get_dummy_test_data()
     {
@@ -157,16 +145,16 @@ public:
     }
 };
 
-class DetectRegion_Pri:public JsonObject{
+class Region_Pri:public JsonObject{
 public:
     vector<Point_Pri> ExpectedAreaVers;
     JsonPacket ProcessorData;
     string SelectedProcessor;
-    DetectRegion_Pri(JsonPacket pkt):JsonObject(pkt)
+    Region_Pri(JsonPacket pkt):JsonObject(pkt)
     {
         decode();
     }
-    DetectRegion_Pri()
+    Region_Pri()
     {
     }
     void decode()
@@ -185,17 +173,17 @@ public:
 
     }
 };
-class DetectRegion_Output:public JsonObject
+class Region_Output:public JsonObject
 {
 public:
     VdRect DetectionRect;
     JsonPacket Result;
-    DetectRegion_Output(JsonPacket pkt):JsonObject(pkt)
+    Region_Output(JsonPacket pkt):JsonObject(pkt)
     {
         decode();
     }
 
-    DetectRegion_Output(JsonPacket rst ,VdRect rct)
+    Region_Output(JsonPacket rst ,VdRect rct)
     {
         DetectionRect=rct;
         Result=rst;
@@ -204,27 +192,21 @@ public:
 
     void decode()
     {
-        try{
-            DECODE_PKT_MEM(DetectionRect);
-            DECODE_PKT_MEM(Result);
-        }catch(exception e){
-            PRT_DECODE_EXCEPTION
-        }
+        DECODE_PKT_MEM(DetectionRect);
+        DECODE_PKT_MEM(Result);
     }
 
     void encode()
     {
-        try{
-            ENCODE_JSONDATA_MEM(DetectionRect);
-            ENCODE_PKT_MEM(Result);
-        }catch(exception e){
-            PRT_DECODE_EXCEPTION
-        }
+
+        ENCODE_JSONDATA_MEM(DetectionRect);
+        ENCODE_PKT_MEM(Result);
+
     }
     template <typename A,typename B,typename C>
     void draw(
             A draw_line,
-            B draw_circle,C draw_text,DetectRegion_Pri input_data)
+            B draw_circle,C draw_text,Region_Pri input_data)
     {
         if(input_data.SelectedProcessor== LABEL_PROCESSOR_DUMMY)
         {
@@ -245,13 +227,13 @@ public:
     }
 
 };
-class CameraData_Pri:public JsonObject{
+class Camera_Pri:public JsonObject{
 
 public:
-    CameraData_Pri()
+    Camera_Pri()
     {
     }
-    CameraData_Pri(JsonPacket pkt):JsonObject(pkt)
+    Camera_Pri(JsonPacket pkt):JsonObject(pkt)
     {
         decode();
     }
@@ -270,16 +252,16 @@ private:
 public:
 
 public:
-    vector<DetectRegion_Pri> DetectRegion;
+    vector<Region_Pri> DetectRegion;
     string Url;
 };
-class CameraManagerData_Pri:public JsonObject{
+class Cameras_Pri:public JsonObject{
 
 public:
-    CameraManagerData_Pri()
+    Cameras_Pri()
     {
     }
-    CameraManagerData_Pri(JsonPacket pkt):JsonObject(pkt)
+    Cameras_Pri(JsonPacket pkt):JsonObject(pkt)
     {
         decode();
     }
@@ -294,7 +276,7 @@ private:
         DECODE_JSONDATA_ARRAY_MEM(CameraData);;
     }
 public:
-    vector<CameraData_Pri> CameraData;
+    vector<Camera_Pri> CameraData;
 
 };
 class Device_Pri:public JsonObject
@@ -319,7 +301,7 @@ private:
         DECODE_JSONDATA_MEM(DeviceConfig);
     }
 public:
-    CameraManagerData_Pri DeviceConfig;
+    Cameras_Pri DeviceConfig;
 };
 
 
@@ -369,7 +351,7 @@ private:
 };
 
 
-class Region_Manager:public VdData<DetectRegion_Pri>
+class Region_Manager:public VdData<Region_Pri>
 {
 public:
     enum OP{
@@ -377,7 +359,7 @@ public:
         CHANGE_PROCESSOR,
         MODIFY_PROCESSOR
     };
-    Region_Manager(DetectRegion_Pri pkt):VdData(pkt)
+    Region_Manager(Region_Pri pkt):VdData(pkt)
     {
 
     }
@@ -385,7 +367,7 @@ public:
     {
 
     }
-    DetectRegion_Output work(cv::Mat frame)
+    Region_Output work(cv::Mat frame)
     {
         lock.lock();
         JsonPacket rst_r;
@@ -407,7 +389,7 @@ public:
         //  p->process(frame,rst_r);
         VdRect r(detect_rect.x,detect_rect.y,detect_rect.width,detect_rect.height);
         JsonPacket dct_rct=r.data();
-        DetectRegion_Output rst(rst_r,dct_rct);
+        Region_Output rst(rst_r,dct_rct);
         lock.unlock();
         return rst;
     }
@@ -504,7 +486,7 @@ private:
 };
 class Camera_Output:public JsonObject{
 public:
-    vector<DetectRegion_Output> DetectionResult;
+    vector<Region_Output> DetectionResult;
     int Timestamp;
     Camera_Output(JsonPacket pkt):JsonObject(pkt)
     {
@@ -513,28 +495,23 @@ public:
     Camera_Output()
     {
     }
-    Camera_Output(vector <DetectRegion_Output> regions,int ts):DetectionResult(regions),Timestamp(ts)
+    Camera_Output(vector <Region_Output> regions,int ts):DetectionResult(regions),Timestamp(ts)
     {
         encode();
     }
     void decode()
     {
-        try{
-            DECODE_INT_MEM(Timestamp);
-            DECODE_JSONDATA_ARRAY_MEM(DetectionResult);
-        }catch(exception e){
-            PRT_DECODE_EXCEPTION
-        }
+
+        DECODE_INT_MEM(Timestamp);
+        DECODE_JSONDATA_ARRAY_MEM(DetectionResult);
+
     }
     void encode()
     {
-        try{
-            ENCODE_INT_MEM(Timestamp);
-            ENCODE_JSONDATA_ARRAY_MEM(DetectionResult);
-        }
-        catch(exception e){
-            PRT_DECODE_EXCEPTION
-        }
+
+        ENCODE_INT_MEM(Timestamp);
+        ENCODE_JSONDATA_ARRAY_MEM(DetectionResult);
+
     }
 #if 0
     template <typename A,typename B,typename C>
@@ -562,13 +539,13 @@ public:
 #endif
 };
 
-class Camera_Manager:public VdData<CameraData_Pri>
+class Camera_Manager:public VdData<Camera_Pri>
 {
 public:
     Camera_Manager()
     {
     }
-    Camera_Manager(CameraData_Pri pkt):
+    Camera_Manager(Camera_Pri pkt):
         VdData(pkt),frame_rate(0),quit(false)
     {
 
@@ -588,7 +565,7 @@ public:
             stop();
             //prt(info,"quit");
             delete work_trd;
-        }        
+        }
         lock.unlock();
         prt(info,"stop [%p]",this);
     }
@@ -641,11 +618,11 @@ public:
                 // waitKey(0);
                 frame_rate++;
 
-                vector<DetectRegion_Output>pkts;
+                vector<Region_Output>pkts;
 
 
                 for(Region_Manager *r:drs){
-                    DetectRegion_Output ret=r->work(frame);
+                    Region_Output ret=r->work(frame);
                     pkts.push_back(ret);
                 }
 
@@ -680,7 +657,7 @@ private:
 
 };
 
-class Cameras_Manager:public VdData<CameraManagerData_Pri>
+class Cameras_Manager:public VdData<Cameras_Pri>
 {
 public:
     Cameras_Manager()
@@ -694,12 +671,12 @@ public:
         cameras.clear();
     }
 
-    Cameras_Manager(CameraManagerData_Pri pkt):
+    Cameras_Manager(Cameras_Pri pkt):
         VdData(pkt)
     {
         //prt(info,"Cameras_Manager start");
 
-        for(CameraData_Pri &cam_config:pkt.CameraData){
+        for(Camera_Pri &cam_config:pkt.CameraData){
             cameras.push_back(new Camera_Manager(cam_config));
         }
         //prt(info,"Cameras_Manager end");
@@ -731,15 +708,12 @@ public:
     Test();
     Test(string str)
     {
-        try{
-            ConfigManager config;
-            Device_Pri dev_cfg(config.get_config());
-            Device_Manager mgr(dev_cfg);
-            PAUSE_HERE_FOREVER
-        }catch(exception e){
-            prt(info,"exception");
-        }
+
+        ConfigManager config;
+        Device_Pri dev_cfg(config.get_config());
+        Device_Manager mgr(dev_cfg);
         PAUSE_HERE_FOREVER
+
     }
 };
 
