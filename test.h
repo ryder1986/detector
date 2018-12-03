@@ -592,7 +592,7 @@ public:
         lock.unlock();
         prt(info,"stop [%p]",this);
     }
-    Camera_Manager(Camera_Manager&&r)=delete;//
+    Camera_Manager(Camera_Manager&&r)=delete;
 #if 0
     Camera_Manager(Camera_Manager&&r)
     {
