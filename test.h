@@ -574,7 +574,7 @@ public:
 
         prt(info,"start [%p]",this);
         //p_src=new VideoSource(pkt.Url);
-        p_src=new VideoSource("rtsp://localhost:5555/test1");
+        p_src=new VideoSource("rtsp://localhost:80/live/test1");
         start();
     }
     ~Camera_Manager()
@@ -675,7 +675,7 @@ private:
     mutex lock;
     vector<Region_Manager*> drs;
     bool quit;
-    function <void(Camera_Manager *,Camera_Output)>callback_result;
+    function <void(Camera_Manager *,Camera_Output)>callback_result=[](Camera_Manager *,Camera_Output){prt(info,"camera call back")};
 
 
 };

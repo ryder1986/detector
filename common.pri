@@ -10,7 +10,7 @@ WITH_OPENCV{
 QMAKE_LFLAGS+=-Wl,--rpath=/root/source/opencv-3.2.0/build/__install/lib
 INCLUDEPATH+=/root/source/opencv-3.2.0/build/__install/include
 LIBS+=-L/root/source/opencv-3.2.0/build/__install/lib -lopencv_core -lopencv_video -lopencv_videoio -lopencv_imgcodecs
-LIBS+=-L/root/source/ffmpeg-3.4.4/__install/lib
+LIBS+=-L/root/source/ffmpeg-3.4.5/__install/lib -lswresample
 LIBS+=-lswresample
 
 }
