@@ -2,6 +2,7 @@
 #define VIDEOSOURCE_H
 
 #include "tool.h"
+
 #ifdef IS_UNIX
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -19,13 +20,12 @@
 #else
 #include "ffmpegvideocapture.h"
 #endif
-using namespace std;
-using namespace cv;
+
 class VideoSource
 {
 public:
     VideoSource(string path);
-    VideoSource(string path,bool only_key_frame);
+  //  VideoSource(string path,bool only_key_frame);
      ~VideoSource();
     void set_buffer_size(int frames)
     {
@@ -55,7 +55,7 @@ public:
         }
         return ret;
     }
-    bool get_frame(Mat &frame)
+    bool get_frame(cv::Mat &frame)
     {
         if(get_pic(frame))
             return true;
@@ -86,7 +86,7 @@ public:
         prt(info,"quit video: %s done", url.data());
     }
 
-    inline  bool get_pic(Mat &frame)
+    inline  bool get_pic(cv::Mat &frame)
     {
 
         bool ret=false;
@@ -101,16 +101,14 @@ public:
 
     }
 
-    bool get_frame(Mat &frame, int &timestamp)
+    bool get_frame(cv::Mat &frame, int &timestamp)
     {
-
         if(get_pic(frame))
             return true;
 
 
         bool ret=false;
         frame_lock.lock();
-      //prt(info,"timepoint fetch start %ld", get_time_point_ms());
 #if 0
         if(frame_list.size()>0){
           //  frame_list.front().copyTo(frame);
@@ -145,7 +143,7 @@ public:
             //           prt(info,"%d",end_time-start_time);
 
 
-            frame_list.erase(frame_list.begin());
+            //frame_list.erase(frame_list.begin());
             timestamp=cur_ms_list.front();
             //cur_ms_list.erase(cur_ms_list.begin());
             ret=true;
@@ -153,7 +151,6 @@ public:
             ret=false;
         }
 #endif
-       //  prt(info,"timepoint   fetch end %ld", get_time_point_ms());
         frame_lock.unlock();
         return ret;
     }
@@ -161,11 +158,18 @@ public:
     {
         lock.lock();
         watch_dog.stop();
-        vcap.release();
+       // vcap.release();
         quit_flg=true;
-        //delete src_trd;
-        src_trd->detach();//TODO delete it?
         lock.unlock();
+        //delete src_trd;
+       // src_trd->detach();//TODO delete it?
+        //delete src_trd;
+        while(!quited){
+              this_thread::sleep_for(chrono::milliseconds(1000));
+              prt(info,"quiting src..");
+        }
+        prt(info,"quiting src done");
+
 
     }
 
@@ -173,28 +177,21 @@ private:
     void run();
     void check_point()
     {
-        lock.lock();
-
-       // prt(info,"%s runing , queue len %d",url.data(),queue_length);
+//       // prt(info,"%s runing , queue len %d",url.data(),queue_length);
         if(vcap.isOpened()){
-            prt(info,"%s is runing , frame queue length: %d,frame_rate:%d",url.data(),queue_length,frame_rate);
             //double w= vcap.get(CV_CAP_PROP_POS_FRAMES);
         }else{
-            prt(info,"VideoSrc: url: %s is Not running",url.data());
+            prt(info,"10 secs report:url: %s is Not running",url.data());
         }
-           frame_rate=0;
-        lock.unlock();
     }
 private:
 #ifdef USE_CVCAP
-    VideoCapture  vcap;
+    cv::VideoCapture  vcap;
 #else
     FfmpegVideoCapture vcap;
 #endif
     Timer1 watch_dog;
-    //  PdVideoCapture vcap;
-    //  VideoCapture vcap;
-    vector <Mat> frame_list;
+    vector <cv::Mat> frame_list;
     vector <int> cur_ms_list;
 
     int frame_wait_time;
@@ -203,10 +200,11 @@ private:
     int frame_rate;
     string url;
     volatile bool quit_flg;
+    bool quited;
 
 
     thread *src_trd;
-    Mat png_frame;
+    cv::Mat png_frame;
     bool is_pic;
     int try_times;
 

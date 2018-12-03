@@ -351,7 +351,7 @@ public:
         return true;
     }
 
-    virtual bool process(Mat img_src,JsonPacket &pkt)=0;
+    virtual bool process(cv::Mat img_src,JsonPacket &pkt)=0;
 
     virtual  string get_rst()
     {
@@ -385,14 +385,14 @@ public:
     {
 
     }
-    DetectRegion_Output work(Mat frame)
+    DetectRegion_Output work(cv::Mat frame)
     {
         lock.lock();
         JsonPacket rst_r;
         valid_rect(detect_rect,frame.cols,frame.rows);
         if(detect_rect.width%2)detect_rect.width--;
         if(detect_rect.height%2)detect_rect.height--;
-        Mat tmp=frame(detect_rect);
+        cv::Mat tmp=frame(detect_rect);
         if(p &&detect_rect.x>=0&&detect_rect.x<10000
                 &&detect_rect.y>=0&&detect_rect.y<10000
                 &&detect_rect.width>0&&detect_rect.width<10000
@@ -465,14 +465,14 @@ defalut:break;
         private_data.change_rect(points);
     }
 
-    static void valid_rect(Rect &area,int max_w,int max_h)
+    static void valid_rect(cv::Rect &area,int max_w,int max_h)
     {
         if((area.x+area.width)>max_w)
             area.width=max_w-area.x;
         if((area.y+area.height)>max_h)
             area.height=max_h-area.y;
     }
-    static Rect reshape_2_rect(vector <Point_Pri> area)
+    static cv::Rect reshape_2_rect(vector <Point_Pri> area)
     {
         int x_min=10000;
         int y_min=10000;
@@ -494,10 +494,10 @@ defalut:break;
         y_min=y_min>0?y_min:0;
         x_max=x_max>0?x_max:0;
         y_max=y_max>0?y_max:0;
-        return Rect(x_min,y_min,x_max-x_min,y_max-y_min);
+        return cv::Rect(x_min,y_min,x_max-x_min,y_max-y_min);
     }
 private:
-    Rect detect_rect;
+    cv::Rect detect_rect;
     mutex lock;
     VideoProcessor *p;
 
@@ -572,32 +572,33 @@ public:
         VdData(pkt),frame_rate(0),quit(false)
     {
 
-        prt(info,"start camera %s",pkt.Url.data());
-        p_src=new VideoSource(pkt.Url);
+        prt(info,"start [%p]",this);
+        //p_src=new VideoSource(pkt.Url);
+        p_src=new VideoSource("rtsp://localhost:5555/test1");
         start();
-        //  private_data.set_points(vs.ExpectedAreaVers);
     }
     ~Camera_Manager()
     {
         quit=true;
-
         lock.lock();
         if(p_src){
             delete p_src;
         }
         if(work_trd){
             stop();
-            prt(info,"quit");
+            //prt(info,"quit");
             delete work_trd;
-        }
+        }        
         lock.unlock();
+        prt(info,"stop [%p]",this);
     }
+    Camera_Manager(Camera_Manager&&r)=delete;//
+#if 0
     Camera_Manager(Camera_Manager&&r)
     {
         lock.lock();
         p_src=r.p_src;
         r.p_src=nullptr;
-
         work_trd=r.work_trd;
         r.work_trd=nullptr;
 
@@ -612,6 +613,7 @@ public:
         lock.unlock();
         prt(info,"copy done");
     }
+#endif
     //  Camera_Manager(Camera_Manager&&r)=default;
     Camera_Manager(const Camera_Manager&m)
     {
@@ -629,7 +631,7 @@ public:
     }
     void run_process()
     {
-        Mat frame;
+        cv::Mat frame;
         int ts;
         while(!quit){
             this_thread::sleep_for(chrono::milliseconds(10));
@@ -646,6 +648,10 @@ public:
                     DetectRegion_Output ret=r->work(frame);
                     pkts.push_back(ret);
                 }
+
+                Camera_Output co(pkts,123);
+                callback_result(this,co);
+
                 //                CameraOutputData cod(pkts,ts);
                 //                timestamp=ts;
                 //                //screenshot=frame;
@@ -669,6 +675,8 @@ private:
     mutex lock;
     vector<Region_Manager*> drs;
     bool quit;
+    function <void(Camera_Manager *,Camera_Output)>callback_result;
+
 
 };
 
@@ -678,20 +686,28 @@ public:
     Cameras_Manager()
     {
     }
+    ~Cameras_Manager()
+    {
+        for(Camera_Manager *p:cameras){
+            delete p;
+        }
+        cameras.clear();
+    }
+
     Cameras_Manager(CameraManagerData_Pri pkt):
         VdData(pkt)
     {
         //prt(info,"Cameras_Manager start");
 
         for(CameraData_Pri &cam_config:pkt.CameraData){
-            cameras.push_back(Camera_Manager(cam_config));
+            cameras.push_back(new Camera_Manager(cam_config));
         }
         //prt(info,"Cameras_Manager end");
     }
 private:
 
 private:
-    vector <Camera_Manager> cameras;
+    vector <Camera_Manager*> cameras;
 };
 
 class Device_Manager:public VdData<Device_Pri>
@@ -719,6 +735,7 @@ public:
             ConfigManager config;
             Device_Pri dev_cfg(config.get_config());
             Device_Manager mgr(dev_cfg);
+            PAUSE_HERE_FOREVER
         }catch(exception e){
             prt(info,"exception");
         }
