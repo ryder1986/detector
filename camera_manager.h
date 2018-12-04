@@ -61,6 +61,10 @@ public:
     Camera_Pri()
     {
     }
+    Camera_Pri(string url,vector<Region_Pri> dr):Url(url),DetectRegion(dr)
+    {
+        encode();
+    }
     Camera_Pri(JsonPacket pkt):JsonObject(pkt)
     {
         decode();
@@ -78,11 +82,17 @@ private:
         DECODE_STRING_MEM(Url);
     }
 public:
-
+    static Camera_Pri get_test_camera()
+    {
+        vector<Region_Pri> rs;
+        Camera_Pri tmp("rtsp://192.168.1.101:554/av0_1",rs);
+        return tmp;
+    }
 public:
     vector<Region_Pri> DetectRegion;
     string Url;
 };
+
 
 class Camera_Manager:public VdData<Camera_Pri>
 {

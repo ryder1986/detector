@@ -15,7 +15,7 @@ public:
     }
 public:
 
-private:
+//private:
     void encode()
     {
         ENCODE_JSONDATA_MEM(DeviceConfig);

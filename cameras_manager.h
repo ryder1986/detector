@@ -10,6 +10,24 @@ public:
         decode();
     }
 public:
+    void add_camera(Camera_Pri &&cam)
+    {
+        CameraData.push_back(cam);
+        encode();
+    }
+//    void add_camera(Camera_Pri cam)
+//    {
+//        CameraData.push_back(cam);
+//        encode();
+//    }
+    int del_camera(int index)
+    {
+        if(index<=0||index>CameraData.size())
+            return -1;
+        CameraData.erase(CameraData.begin()+index-1);
+        encode();
+        return 0;
+    }
 private:
     void encode()
     {
@@ -17,11 +35,10 @@ private:
     }
     void decode()
     {
-        DECODE_JSONDATA_ARRAY_MEM(CameraData);;
+        DECODE_JSONDATA_ARRAY_MEM(CameraData);
     }
 public:
     vector<Camera_Pri> CameraData;
-
 };
 class Cameras_Manager:public VdData<Cameras_Pri>
 {
