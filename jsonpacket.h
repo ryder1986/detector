@@ -799,4 +799,61 @@ static inline Point_Pri add_point_offset(Point_Pri p_ori,Point_Pri p_offset)
 }
 
 */
+
+
+class Point_Pri:public JsonObject
+{
+public:
+    int x;
+    int y;
+    Point_Pri(JsonPacket pkt):JsonObject(pkt)
+    {
+        decode();
+    }
+    Point_Pri(int x,int y):x(x),y(y)
+    {
+        encode();
+    }
+    Point_Pri()
+    {
+
+    }
+    void decode()
+    {
+        DECODE_INT_MEM(x);
+        DECODE_INT_MEM(y);
+    }
+    void encode()
+    {
+        ENCODE_INT_MEM(x);
+        ENCODE_INT_MEM(y);
+    }
+};
+class Vers:public JsonObject{
+public:
+    vector <Point_Pri>ExpectedAreaVers;
+    Vers(JsonPacket pkt):JsonObject(pkt)
+    {
+        decode();
+    }
+    Vers(vector <Point_Pri> vs)
+    {
+        ExpectedAreaVers.assign(vs.begin(),vs.end());
+        encode();
+    }
+    void decode()
+    {
+
+        DECODE_JSONDATA_ARRAY_MEM(ExpectedAreaVers);
+
+    }
+    void encode()
+    {
+
+        ENCODE_JSONDATA_ARRAY_MEM(ExpectedAreaVers);
+
+
+    }
+};
+
 #endif // JSONPACKET_H

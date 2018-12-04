@@ -4,15 +4,13 @@
 */
 
 #include <iostream>
-#include "test.h"
+//#include "test.h"
+#include "device_manager.h"
+#include "configmanager.h"
 int main()
 {
-    try{
-    Test t("res/config.json");
+    ConfigManager cfg;
+    Device_Manager dm(Device_Pri(cfg.get_config()));
     PAUSE_HERE_FOREVER
-    }catch(exception e){
-        prt(info,"err");
-    }
-
     return 0;
 }
