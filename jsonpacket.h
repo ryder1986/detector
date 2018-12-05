@@ -676,14 +676,102 @@ JsonPacket obj_2_pkt(T jd)
 
     return jd.data();
 }
-/*
+
+
+class Point_Pri:public JsonObject
+{
+public:
+    int x;
+    int y;
+    Point_Pri(JsonPacket pkt):JsonObject(pkt)
+    {
+        decode();
+    }
+    Point_Pri(int x,int y):x(x),y(y)
+    {
+        encode();
+    }
+    Point_Pri()
+    {
+
+    }
+    void decode()
+    {
+        DECODE_INT_MEM(x);
+        DECODE_INT_MEM(y);
+    }
+    void encode()
+    {
+        ENCODE_INT_MEM(x);
+        ENCODE_INT_MEM(y);
+    }
+};
+class Vers:public JsonObject{
+public:
+    vector <Point_Pri>ExpectedAreaVers;
+    Vers(JsonPacket pkt):JsonObject(pkt)
+    {
+        decode();
+    }
+    Vers(vector <Point_Pri> vs)
+    {
+        ExpectedAreaVers.assign(vs.begin(),vs.end());
+        encode();
+    }
+    void decode()
+    {
+
+        DECODE_JSONDATA_ARRAY_MEM(ExpectedAreaVers);
+
+    }
+    void encode()
+    {
+
+        ENCODE_JSONDATA_ARRAY_MEM(ExpectedAreaVers);
+
+
+    }
+};
+
+static inline VdRect vers_2_rect(vector <Point_Pri> area)
+{
+    int x_min=10000;
+    int y_min=10000;
+    int x_max=0;
+    int y_max=0;
+    for(Point_Pri pkt: area) {
+        int x=pkt.x;
+        int y=pkt.y;
+        if(x<x_min)
+            x_min=x;
+        if(x>x_max)
+            x_max=x;
+        if(y<y_min)
+            y_min=y;
+        if(y>y_max)
+            y_max=y;
+    }
+    x_min=x_min>0?x_min:0;
+    y_min=y_min>0?y_min:0;
+    x_max=x_max>0?x_max:0;
+    y_max=y_max>0?y_max:0;
+    return VdRect(x_min,y_min,x_max-x_min,y_max-y_min);
+}
+static inline Point_Pri add_point_offset(Point_Pri p_ori,Point_Pri p_offset)
+{
+     return Point_Pri(p_ori.x+p_offset.x,p_ori.y+p_offset.y);
+}
+
+
+
 class PaintableData
 {
 public:
     enum Colour{
         Red=1,
         Green,
-        Blue
+        Blue,
+        Yellow
     };
     enum Event{
         MoveVer=1,
@@ -767,93 +855,6 @@ public:
     int event_type;
     Point_Pri ori_pnt;
     int point_index;
-};
-
-static inline VdRect vers_2_rect(vector <Point_Pri> area)
-{
-    int x_min=10000;
-    int y_min=10000;
-    int x_max=0;
-    int y_max=0;
-    for(Point_Pri pkt: area) {
-        int x=pkt.x;
-        int y=pkt.y;
-        if(x<x_min)
-            x_min=x;
-        if(x>x_max)
-            x_max=x;
-        if(y<y_min)
-            y_min=y;
-        if(y>y_max)
-            y_max=y;
-    }
-    x_min=x_min>0?x_min:0;
-    y_min=y_min>0?y_min:0;
-    x_max=x_max>0?x_max:0;
-    y_max=y_max>0?y_max:0;
-    return VdRect(x_min,y_min,x_max-x_min,y_max-y_min);
-}
-static inline Point_Pri add_point_offset(Point_Pri p_ori,Point_Pri p_offset)
-{
-     return Point_Pri(p_ori.x+p_offset.x,p_ori.y+p_offset.y);
-}
-
-*/
-
-
-class Point_Pri:public JsonObject
-{
-public:
-    int x;
-    int y;
-    Point_Pri(JsonPacket pkt):JsonObject(pkt)
-    {
-        decode();
-    }
-    Point_Pri(int x,int y):x(x),y(y)
-    {
-        encode();
-    }
-    Point_Pri()
-    {
-
-    }
-    void decode()
-    {
-        DECODE_INT_MEM(x);
-        DECODE_INT_MEM(y);
-    }
-    void encode()
-    {
-        ENCODE_INT_MEM(x);
-        ENCODE_INT_MEM(y);
-    }
-};
-class Vers:public JsonObject{
-public:
-    vector <Point_Pri>ExpectedAreaVers;
-    Vers(JsonPacket pkt):JsonObject(pkt)
-    {
-        decode();
-    }
-    Vers(vector <Point_Pri> vs)
-    {
-        ExpectedAreaVers.assign(vs.begin(),vs.end());
-        encode();
-    }
-    void decode()
-    {
-
-        DECODE_JSONDATA_ARRAY_MEM(ExpectedAreaVers);
-
-    }
-    void encode()
-    {
-
-        ENCODE_JSONDATA_ARRAY_MEM(ExpectedAreaVers);
-
-
-    }
 };
 
 #endif // JSONPACKET_H

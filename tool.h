@@ -47,7 +47,6 @@ inline int dir_count(char *dirname)
     }
     return -1;
 }
-#if 0
 inline void delete_dir_files(char *dirname,int total,int left)
 {
     DIR *d;
@@ -70,40 +69,7 @@ inline void delete_dir_files(char *dirname,int total,int left)
         closedir(d);
     }
 }
-#else
-// ls -tp | grep -v '/$' | tail -n +20 | xargs -d '\n' -r rm -- ; ls
-// cd /ftphome/pic/ ; ls -tp  | grep -v '/$' | tail -n +20 | xargs -d '\n' -r rm --
-inline void delete_dir_files(char *dirname,int total,int left)
-{
-   // system("cd  /ftphome/pic ; ls > /root/test.txt");
-//    system("cd /ftphome/pic/ ; ls -tp  | grep -v '/$' | tail -n +1000 | xargs -d '\n' -r rm --;cd -");
 
-     char buf[1000];memset(buf,0,1000);
-     sprintf(buf,"cd %s ; ls -tp  | grep -v '/$' | tail -n +%d | xargs -d '\n' -r rm --;cd -",dirname,1000);
-     system(buf);
-
-
-  //    DIR *d;
-//    struct dirent *dir;
-//    d = opendir(dirname);
-//    if (d) {
-//        int num=0;
-//        while ((dir = readdir(d)) != NULL&&  num++<(total-left)) {
-
-//               printf("Deleteing %s,type %d  \n",dir->d_name,dir->d_type);
-//               char buf[1000];
-//               memset(buf,0,1000);
-//               sprintf(buf,"%s/%s",dirname,dir->d_name);
-//              // printf("%s\n",buf);
-//            if (remove(buf) == 0)
-//                printf("Deleted %s successfully\n",dir->d_name);
-//            else
-//                printf("Unable to  delete  %s \n",dir->d_name);
-//        }
-//        closedir(d);
-//    }
-}
-#endif
 inline string get_last_sub_string(string str,char t)
 {
     unsigned int pos;
@@ -406,7 +372,7 @@ public:
         char buf1[100];
         memset(buf1,0,100);
         sprintf(buf1,"%d",line_no);
-//#define WITHOUT_TIME_LABEL
+#define WITHOUT_TIME_LABEL
 #ifdef WITHOUT_TIME_LABEL
         time="";
         label="";
@@ -462,6 +428,7 @@ public:
 #include <functional>
 /*
     This is a versy timer
+    std::thread([](){}).detach();
 */
 class Timer1{
     typedef function<void()> timed_func_t;
@@ -539,11 +506,6 @@ public:
         }
         return false;
     }
-    static inline string remove_prefix(string src)
-    {
-        int n=src.find_first_of("{");
-        return src=src.substr(n,src.size()-n);
-    }
 private:
     static inline bool try_get_obj_buf(string src,string &dst)
     {
@@ -573,10 +535,10 @@ private:
                 ret=true;
                 if(src[i+1]=='\n')
                     //   dst.truncate(i+2);
-                    dst=dst.substr(0,i+2);
+                    dst.substr(0,i+2);
                 else
                     // dst.truncate(i+i);
-                    dst=dst.substr(0,i+1);
+                    dst.substr(0,i+1);
             }
         }
         return ret;
@@ -676,9 +638,11 @@ inline  char *get_sql_time()
     tt=time(NULL);
     tm*  lt=localtime(&tt);
     if (strftime(buf2,100, fmt, lt) != NULL) {
-        //prt(info,"ok");
+        prt(info,"ok");
     }else{
         prt(info,"err");
+
+
     }
     return buf2;
 }
@@ -695,13 +659,6 @@ inline char * get_time_string()
 //    return tv.tv_sec*1000+tv.tv_usec/1000;
 }
 #endif
-
-#define PRT_DECODE_EXCEPTION prt(debug,"error in decoding %s data:=>%s<=",typeid(this).name(),config.str().data());
-//#define PRT_DECODE_EXCEPTION prt(info,"error in decoding %s data:=>%s<=",typeid(this).name(),config.str().data());
-//#define PRT_ENCODE_EXCEPTION prt(info,"error in encoding %s data:=>%s<=",typeid(this).name(),config.str().data());
-#define PRT_ENCODE_EXCEPTION prt(debug,"error in encoding %s data:=>%s<=",typeid(this).name(),config.str().data());
-
-
 #define PRT_DECODE_EXCEPTION prt(debug,"error in decoding %s data:=>%s<=",typeid(this).name(),config.str().data());
 #define PRT_ENCODE_EXCEPTION prt(debug,"error in encoding %s data:=>%s<=",typeid(this).name(),config.str().data());
 //#define PRT_DECODE_EXCEPTION prt(info,"error in decoding %s data:=>%s<=",typeid(this).name(),config.str().data());
@@ -710,19 +667,18 @@ class ClientConfig{
 public:
     static bool show_processor_text;
     static bool show_camera_state;
+    static bool show_output;
+    static bool show_input;
 };
 #define SLEEP_HERE     \
 while(true){\
 this_thread::sleep_for(chrono::microseconds(1000));\
 }
-#define PAUSE_HERE_FOREVER     \
+#define PAUSE_HERE     \
 while(true){\
 this_thread::sleep_for(chrono::microseconds(1000));\
 }
-#define SLEEP_HERE_MS(ms)     \
-do{\
-this_thread::sleep_for(chrono::milliseconds(ms));\
-}while(false)
+
 #define PAUSE_HERE_3s     \
 while(true){\
 static int tmp=0;if(tmp++>3){prt(info,"pause 3 seconds done");break;}this_thread::sleep_for(chrono::microseconds(1000000));\
@@ -739,14 +695,6 @@ std::thread([addr](){\
 ).detach();\
     \
 name=NULL;\
-}
-inline string int_2_string(int num)
-{
-    char buf[1000];
-    memset(buf,0,1000);
-    sprintf(buf,"%d",num);
-    string str(buf);
-    return str;
 }
 
 #endif // TOOL1_H

@@ -12,11 +12,11 @@ DEFINES+=IS_SERVER
 HEADERS += \
      configmanager.h device_manager.h cameras_manager.h camera_manager.h region_manager.h processor_manager.h \
     data_manager.h \
-    mainwindow.h
+    mainwindow.h playerwidget.h
 
 SOURCES += \
  configmanager.cpp main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp playerwidget.cpp
 CONFIG+=c++11
 unix{
     DEFINES+=IS_UNIX

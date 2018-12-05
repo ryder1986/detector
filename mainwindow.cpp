@@ -8,10 +8,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     cfg=new ConfigManager();
     dev=NULL;
+
+    video_layout=new QGridLayout();
+    ui->groupBox_video->setLayout(video_layout);
 }
 
 MainWindow::~MainWindow()
 {
+    delete video_layout;
     delete cfg;
     if(dev)
         delete dev;
@@ -45,4 +49,14 @@ void MainWindow::on_pushButton_del_clicked()
 {
     dev->DeviceConfig.del_camera(camera_index);
     show_in_combox();
+}
+#include "playerwidget.h"
+void MainWindow::on_pushButton_play_clicked()
+{
+//   video_layout->children().clear();
+//   for(Camera_Pri &p:dev->DeviceConfig.CameraData){
+//      video_layout->addWidget(new PlayerWidget(p));
+//   }
+
+
 }

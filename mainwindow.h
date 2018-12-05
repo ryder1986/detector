@@ -5,6 +5,9 @@
 #include "configmanager.h"
 #include "device_manager.h"
 #include "ui_mainwindow.h"
+
+#include <QGridLayout>
+
 namespace Ui {
 class MainWindow;
 }
@@ -26,6 +29,8 @@ private slots:
 
     void on_pushButton_del_clicked();
 
+    void on_pushButton_play_clicked();
+
 private:
     void show_in_combox()
     {
@@ -41,6 +46,7 @@ private:
     ConfigManager *cfg;
     Device_Pri *dev;
     int camera_index;
+    QGridLayout *video_layout;
 };
 
 #endif // MAINWINDOW_H
