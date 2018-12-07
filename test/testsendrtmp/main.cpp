@@ -5,10 +5,13 @@ using namespace std;
 //int TestRtmp::tmp_loop=0;
 int main()
 {
-
-    TestRtmp tr;
-//TestH264 t;
-//t.run();
+#if 0
+     TestRtmp tr;
+#else
+    TestH264Encode t;
+    t.run();
+#endif
+    // H264Send send;
     cout << "Hello World!" << endl;
 
     PAUSE_HERE

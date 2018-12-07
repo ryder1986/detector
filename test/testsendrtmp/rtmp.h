@@ -1616,6 +1616,65 @@ private:
 
 
 };
+//class H264Send{
+//public:
+//    H264Send()
+//    {
 
+//    }
+//    ~H264Send()
+//    {
+
+//    }
+//    void run()
+//    {
+
+//    }
+//};
+class H264Send{
+public:
+    H264Send()
+    {
+        run();
+    }
+
+
+    ~H264Send()
+    {
+
+    }
+
+    int read_buffer1(unsigned char *buf, int buf_size ){
+        if(!feof(fp_send1)){
+            int true_size=fread(buf,1,buf_size,fp_send1);
+            return true_size;
+        }else{
+            return -1;
+        }
+    }
+
+    int run()
+    {
+        RtmpSender1 sender;
+        fp_send1 = fopen("/root/test.264", "rb");
+
+        //初始化并连接到服务器
+      //  RTMP264_Connect("rtmp://localhost/live/test1");
+        sender.RTMP264_Connect("rtmp://192.168.1.219/live/test1");
+        sender.read_buffer=bind(&H264Send::read_buffer1,this,placeholders::_1,placeholders::_2);
+        //发送
+        while(1)
+        sender.RTMP264_Send();
+
+        //断开连接并释放相关资源
+        sender.RTMP264_Close();
+
+    //    cout << "Hello World!" << endl;
+        usleep(10000000);
+        return 0;
+    }
+private:
+    FILE *fp_send1;
+};
 #endif // TEST_H
 

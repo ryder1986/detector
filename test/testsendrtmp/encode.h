@@ -133,10 +133,12 @@ private:
 };
 class YuvFile{
 public:
-    YuvFile()
+    YuvFile(const char *path,int w=480,int h=272)
     {
-        width=480;
-        height=272;
+        width=w;
+        height=h;
+        memset(yuv_path,0,100);
+        strcpy(yuv_path,path);
     }
 
     ~YuvFile()
@@ -146,7 +148,7 @@ public:
 
     int open()
     {
-        in_file  = fopen("/root/test.yuv", "rb");   //Input raw YUV data
+        in_file  = fopen(yuv_path, "rb");   //Input raw YUV data
         //  in_file  = fopen("/root/ds_480x272.yuv", "rb");   //Input raw YUV data
         return 0;
     }
@@ -166,18 +168,19 @@ public:
     {
         fclose(in_file);
     }
-    friend class TestH264;
+    friend class TestH264Encode;
 private:
     FILE *in_file;
     int width;
     int height;
+    char yuv_path[100];
 
 };
 class H264File{
 public:
-    H264File()
+    H264File(const char *path)
     {
-        strcpy(out_file,"/root/test.264");
+        strcpy(out_file,path);
         pFormatCtx = avformat_alloc_context();
         //Guess Format
         fmt = av_guess_format(NULL, out_file, NULL);
@@ -249,13 +252,16 @@ private:
     char out_file[100];
     AVStream* video_st;
 };
-class TestH264{
+class TestH264Encode{
 public:
-    TestH264():h264_encoder(yuv_file.width,yuv_file.height)
+    TestH264Encode():
+        h264_encoder(yuv_file.width,yuv_file.height),
+        yuv_file("/root/test.yuv",640,480),
+        h264_file("/root/test.264")
     {
 
     }
-    ~TestH264()
+    ~TestH264Encode()
     {
 
     }

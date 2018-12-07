@@ -21,6 +21,9 @@ extern "C"
 class TestRtmp{
 public:
     TestRtmp():encoder(640,480),src("rtsp://192.168.1.95:554/av0_1")
+  #ifdef TESTFILE
+      ,h264_file("/root/test.264")
+  #endif
     {
         #ifdef TESTFILE
         if(h264_file.open()){
@@ -70,7 +73,7 @@ public:
                // p=pkt;
 
                 prt(info,"encode size %d",pkt.size);
-                #ifdef TESTFILE
+#ifdef TESTFILE
                   h264_file.write(pkt);
 #endif
                 pkts.push_back(pkt);
