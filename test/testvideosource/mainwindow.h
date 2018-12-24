@@ -6,7 +6,7 @@
 
 
 #include "videosource.h"
-#include "playerwidget.h"
+#include "player.h"
 namespace Ui {
 class MainWindow;
 }
@@ -38,7 +38,7 @@ private slots:
             delete wgt;
         }
 
-        wgt=new PlayerWidget(ui->lineEdit_url->text().toStdString());
+        wgt=new Player(ui->lineEdit_url->text().toStdString());
         lo.addWidget(wgt);
        // lo.addWidget(new PlayerWidget(ui->));
      }

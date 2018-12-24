@@ -1,5 +1,5 @@
 WITH_CPPJSON{
-CPPJSON_PATH=cppjson/
+CPPJSON_PATH=$$COMMON_FILES_PATH/cppjson/
 INCLUDEPATH+=$$CPPJSON_PATH/include
 SOURCES +=\
     $$CPPJSON_PATH/json_reader.cpp \
@@ -20,6 +20,12 @@ LIBS+=-L/root/source/ffmpeg-3.4.5/__install/lib -lswresample -lavcodec -lavforma
 LIBS+=-lswresample
 
 }
+
+WITH_WIDGET{
+HEADERS+=$$COMMON_FILES_PATH/playerwidget.h
+SOURCES+=$$COMMON_FILES_PATH/playerwidget.cpp
+}
+
 equals(COMMON_FILES_PATH, ""){
     message("COMMON_FILES_PATH is not set...")
 }

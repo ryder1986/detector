@@ -14,11 +14,9 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
-    playerwidget.cpp
+        mainwindow.cpp player.cpp
 
-HEADERS  += mainwindow.h \
-    playerwidget.h
+HEADERS  += mainwindow.h player.h
 
 FORMS    += mainwindow.ui
 CONFIG+=c++11
@@ -28,5 +26,6 @@ CONFIG+=c++11
 ########comon components##########
 COMMON_FILES_PATH=./../../
 #CONFIG +=WITH_CPPJSON
+#CONFIG+=WITH_WIDGET
 CONFIG+=WITH_OPENCV
 include($$COMMON_FILES_PATH/common.pri)

@@ -4,11 +4,12 @@
 #include <QWidget>
 #include <iostream>
 #include <string>
-class Player : public QWidget
+#include <QOpenGLWidget>
+class Player : public QOpenGLWidget
 {
     Q_OBJECT
 public:
-    explicit Player(std::string url,QWidget *parent = 0) : QWidget(parent)
+    explicit Player(std::string url,QWidget *parent = 0)
     {
 
     }
